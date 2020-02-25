@@ -40,6 +40,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SimulationHistory.cs" />
+    <Compile Include="DBConnection.cs" />
     <Compile Include="ConsoleGUI.cs" />
     <Compile Include="equipment\Bearing.cs" />
     <Compile Include="equipment\Equipment.cs" />

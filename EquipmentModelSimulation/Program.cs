@@ -3,7 +3,7 @@
     class Program
     {
         private static readonly double DATA_POINTS_PER_SECOND = 100;          // Times per second
-        private static readonly int POPULATED_HISTORY_LENGTH = 0;            // Seconds (2592000 s = 30 days)
+        private static readonly int POPULATED_HISTORY_LENGTH = 30 * 60;            // Seconds (2592000 s = 30 days)
         private static readonly int MAX_RENDERS_PER_SECOND = 5;
 
         private static void Main()
@@ -30,31 +30,51 @@
             System.DateTime lastRender = System.DateTime.MinValue;
             System.DateTime loopStart;
 
-            while (true)
+            using (DBConnection dbConnection = new DBConnection())
             {
-                loopStart = System.DateTime.UtcNow;
+                dbConnection.ConnectOrThrow();
 
-                // Run one simulation loop
-                simulation.RunLoop(timeStep);
+                bool simulationHistoryDataWritten = false;
 
-                // Case: History calculation finished
-                if (simulation.CurrentTimeReached)
+                // Clear all previous history data for the equipment properties
+                dbConnection.ClearHistory();
+
+                while (true)
                 {
-                    // Case: Enough time has been passed since the last render
-                    // > Render again
-                    if (System.DateTime.UtcNow.Subtract(lastRender).TotalMilliseconds > 1000 / MAX_RENDERS_PER_SECOND)
+                    loopStart = System.DateTime.UtcNow;
+
+                    // Run one simulation loop
+                    simulation.RunLoop(timeStep);
+
+                    // Case: History calculation finished
+                    if (simulation.CurrentTimeReached)
                     {
-                        gui.DrawSystem(simulation);
-                        lastRender = System.DateTime.UtcNow;
+                        // Case: History data has not been written to the database
+                        if (!simulationHistoryDataWritten)
+                        {
+                            dbConnection.WriteSimulationHistoryData(simulation.History);
+                            simulationHistoryDataWritten = true;
+                        }
+
+                        // Case: Enough time has been passed since the last render
+                        // > Render again
+                        if (System.DateTime.UtcNow.Subtract(lastRender).TotalMilliseconds > 1000 / MAX_RENDERS_PER_SECOND)
+                        {
+                            gui.DrawSystem(simulation);
+                            lastRender = System.DateTime.UtcNow;
+                        }
+
+                        // Update the current values in the database to match the simulation values
+                        dbConnection.WriteSimulationCurrentValues(simulation);
+
+                        // Get loop duration
+                        var loopDuration = (System.DateTime.UtcNow - loopStart).TotalMilliseconds;
+
+                        // Sleep for a while, max out to zero
+                        var sleepTime = System.Math.Max(timeStep * 1000 - loopDuration, 0);
+
+                        System.Threading.Thread.Sleep((int)sleepTime);
                     }
-
-                    // Get loop duration
-                    var loopDuration = (System.DateTime.UtcNow - loopStart).TotalMilliseconds;
-
-                    // Sleep for a while, max out to zero
-                    var sleepTime = System.Math.Max(timeStep * 1000 - loopDuration, 0);
-
-                    System.Threading.Thread.Sleep((int)sleepTime);
                 }
             }
         }

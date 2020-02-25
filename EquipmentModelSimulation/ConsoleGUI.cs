@@ -74,8 +74,8 @@
             GetPropertyProgress("Pump temperature", simulation.Pump.Temperature);
 
             Log();
-            GetPropertyProgress("Tank A level", simulation.TankA.Level);
-            GetPropertyProgress("Tank B level", simulation.TankB.Level);
+            GetPropertyProgress("Source tank level", simulation.SourceTank.Level);
+            GetPropertyProgress("Target tank level", simulation.TargetTank.Level);
 
             Log();
             GetPropertyProgress("Flowback pipe flow", simulation.FlowbackPipe.Flow);

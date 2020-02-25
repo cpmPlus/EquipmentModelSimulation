@@ -13,22 +13,24 @@
         private static readonly double TANK_VOLUME = 1000;             // Liters
 
         /*
-         * Pump is pumping water from the tank A
-         * to the tank B. Water is freely flowing
-         * back from tank B to tank A using the 
+         * Pump is pumping water from the source tank
+         * to the target tank. Water is freely flowing
+         * back from target tank to source tank using the 
          * flowback pipe.
          * 
-         * |       | >>>>> pump >>>>> |       |
-         * | tankA |                  | tankB |
-         * |_______| <<< flowback <<< |_______|
+         * | source | >>>>> pump >>>>> | target |
+         * |  tank  |                  |  tank  |
+         * |________| <<< flowback <<< |________|
          */
 
         // Equipment
-        public Tank TankA;
-        public Tank TankB;
+        public Tank SourceTank;
+        public Tank TargetTank;
         public Pipe FlowbackPipe;
         public Pipe PipeWithPump;
         public Pump Pump;
+
+        public SimulationHistory History = new SimulationHistory();
 
         public Simulation(System.DateTime simulateFrom)
         {
@@ -36,8 +38,8 @@
             SimulateTime = simulateFrom;
 
             // Create two tanks
-            TankA = new Tank("Tank A", maximumLevel: TANK_VOLUME, currentLevel: TANK_VOLUME);
-            TankB = new Tank("Tank B", maximumLevel: TANK_VOLUME, currentLevel: 0);
+            SourceTank = new Tank("Source tank", maximumLevel: TANK_VOLUME, currentLevel: TANK_VOLUME);
+            TargetTank = new Tank("Target tank", maximumLevel: TANK_VOLUME, currentLevel: 0);
 
             // Create pump
             Pump = new Pump("Pump", nominalPower: PUMP_NOMINAL_POWER);
@@ -46,15 +48,15 @@
             FlowbackPipe = new Pipe(
                 "Flowback pipe",
                 flow: FLOWBACK_PIPE_FLOW,
-                sourceTank: TankB,
-                targetTank: TankA);
+                sourceTank: TargetTank,
+                targetTank: SourceTank);
 
             // Create the main pipe and attach the pump
             PipeWithPump = new Pipe(
                 "Pipe with pump",
                 flow: PUMP_MAX_FLOW,
-                sourceTank: TankA,
-                targetTank: TankB,
+                sourceTank: SourceTank,
+                targetTank: TargetTank,
                 pump: Pump);
         }
 
@@ -68,6 +70,22 @@
             return SimulateTime >= System.DateTime.UtcNow;
         }
 
+        private void addCurrentValuesToHistory()
+        {
+            History.Timestamps.Add(SimulateTime);
+
+            History.PumpPower.Add(Pump.Power.CurrentValue);
+            History.PumpIsRunning.Add(Pump.IsRunning);
+
+            History.SourceTankLevel.Add(SourceTank.Level.CurrentValue);
+
+            History.TargetTankLevel.Add(TargetTank.Level.CurrentValue);
+
+            History.FlowbackPipeFlow.Add(FlowbackPipe.Flow.CurrentValue);
+
+            History.PipeWithPumpFlow.Add(PipeWithPump.Flow.CurrentValue);
+        }
+
         public void RunLoop(double timeStep)
         {
             // Make actions
@@ -75,11 +93,11 @@
             PipeWithPump.Act(timeStep: timeStep);
 
             // Turn pump off if tank has more than 900 liters of water
-            if (TankA.Level.CurrentValue > 900 && !Pump.IsRunning)
+            if (SourceTank.Level.CurrentValue > 900 && !Pump.IsRunning)
                 Pump.IsRunning = true;
 
             // Turn pump on if tank has less than 100 liters of water
-            if (TankA.Level.CurrentValue < 100 && Pump.IsRunning)
+            if (SourceTank.Level.CurrentValue < 100 && Pump.IsRunning)
                 Pump.IsRunning = false;
 
             // Case: Simulating current moment
@@ -90,6 +108,8 @@
             else
             {
                 SimulateTime = SimulateTime.AddSeconds(timeStep);
+
+                addCurrentValuesToHistory();
 
                 // Check if history calculation was finished
                 if (SimulateTime >= System.DateTime.UtcNow)
