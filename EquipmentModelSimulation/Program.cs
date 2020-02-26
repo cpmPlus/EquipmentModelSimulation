@@ -2,7 +2,7 @@
 {
     class Program
     {
-        private static readonly double DATA_POINTS_PER_SECOND = 100;          // Times per second
+        private static readonly double DATA_POINTS_PER_SECOND = 1;          // Times per second
         private static readonly int POPULATED_HISTORY_LENGTH = 30 * 60;            // Seconds (2592000 s = 30 days)
         private static readonly int MAX_RENDERS_PER_SECOND = 5;
 
