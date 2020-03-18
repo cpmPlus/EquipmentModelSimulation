@@ -12,7 +12,7 @@ namespace EquipmentModelSimulation
             Level = new equipment.Property(
                 minValue: 0,
                 maxValue: maximumLevel,
-                unit: "l");
+                unit: "mm");
             Level.CurrentValue = currentLevel;
         }
 
