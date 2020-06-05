@@ -16,6 +16,8 @@ namespace EquipmentModelSimulation
 
         public bool IsRunning { get; set; }
 
+        public long IsRunningInt { get => IsRunning ? 1 : 16; } // 1 == Open, 16 == Closed
+
         public Pump(string name, double nominalPower) : base(name)
         {
 

@@ -7,7 +7,7 @@ namespace EquipmentModelSimulation
         public List<System.DateTime> Timestamps = new List<System.DateTime>();
 
         public List<double> PumpPower = new List<double>();
-        public List<bool> PumpIsRunning = new List<bool>();
+        public List<long> PumpIsRunning = new List<long>();
 
         public List<double> SourceTankLevel = new List<double>();
 

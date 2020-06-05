@@ -75,7 +75,7 @@
             History.Timestamps.Add(SimulateTime);
 
             History.PumpPower.Add(Pump.Power.CurrentValue);
-            History.PumpIsRunning.Add(Pump.IsRunning);
+            History.PumpIsRunning.Add(Pump.IsRunningInt);
 
             History.SourceTankLevel.Add(SourceTank.Level.CurrentValue);
 

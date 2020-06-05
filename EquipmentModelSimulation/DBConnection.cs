@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using ABB.Vtrin.Drivers;
 using ABB.Vtrin;
 using ABB.Vtrin.Util;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EquipmentModelSimulation
 {
@@ -14,6 +15,9 @@ namespace EquipmentModelSimulation
         private static readonly string RTDBHost = "wss://localhost/history";
         private static readonly string RTDBUsername = "username";
         private static readonly string RTDBPassword = "password";
+
+        private cDbEnumerationMember binaryTextOpen;
+        private cDbEnumerationMember binaryTextClosed;
 
         public void ConnectOrThrow()
         {
@@ -48,6 +52,10 @@ namespace EquipmentModelSimulation
                     string msg = System.Text.Encoding.UTF8.GetString(memoryStream.GetBuffer());
                     throw new System.ApplicationException(msg);
                 }
+
+                cDbEnumeration binaryTextEnum = RTDBDriver.Enumerations.GetInstanceByName("Binary Text(0)");
+                binaryTextOpen = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Open").First();
+                binaryTextClosed = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Closed").First();
             }
         }
 
@@ -123,7 +131,7 @@ namespace EquipmentModelSimulation
         public void WriteSimulationCurrentValues(Simulation simulation)
         {
             writePropertyCurrentValue("Example site.Water transfer system.Pump section.Pump", "Current power", simulation.Pump.Power.CurrentValue);
-            writePropertyCurrentValue("Example site.Water transfer system.Pump section.Pump", "Running", simulation.Pump.IsRunning);
+            writePropertyCurrentValue("Example site.Water transfer system.Pump section.Pump", "Running", simulation.Pump.IsRunning ? binaryTextOpen : binaryTextClosed);
 
             writePropertyCurrentValue("Example site.Water transfer system.Tank area.Source tank", "Level", simulation.SourceTank.Level.CurrentValue);
 
