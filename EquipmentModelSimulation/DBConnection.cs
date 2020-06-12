@@ -53,9 +53,9 @@ namespace EquipmentModelSimulation
                     throw new System.ApplicationException(msg);
                 }
 
-                cDbEnumeration binaryTextEnum = RTDBDriver.Enumerations.GetInstanceByName("Binary Text(0)");
-                binaryTextOpen = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Open").First();
-                binaryTextClosed = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Closed").First();
+                cDbEnumeration binaryTextEnum = RTDBDriver.Enumerations.GetInstanceByName("Binary Text(1)");
+                binaryTextRun = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Run").First();
+                binaryTextStop = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Stop").First();
             }
         }
 
@@ -86,16 +86,16 @@ namespace EquipmentModelSimulation
 
         public void WriteSimulationHistoryData(SimulationHistory history)
         {
-            writePropertyHistoryData("Example site.Water transfer system.Pump section.Pump", "Current power", history.Timestamps, history.PumpPower);
-            writePropertyHistoryData("Example site.Water transfer system.Pump section.Pump", "Running", history.Timestamps, history.PumpIsRunning);
+            writePropertyHistoryData("Example site.Pump section.Pump", "Power", history.Timestamps, history.PumpPower);
+            writePropertyHistoryData("Example site.Pump section.Pump", "Running", history.Timestamps, history.PumpIsRunning);
 
-            writePropertyHistoryData("Example site.Water transfer system.Tank area.Source tank", "Level", history.Timestamps, history.SourceTankLevel);
+            writePropertyHistoryData("Example site.Tank area.Source tank", "Level", history.Timestamps, history.SourceTankLevel);
 
-            writePropertyHistoryData("Example site.Water transfer system.Tank area.Target tank", "Level", history.Timestamps, history.TargetTankLevel);
+            writePropertyHistoryData("Example site.Tank area.Target tank", "Level", history.Timestamps, history.TargetTankLevel);
 
-            writePropertyHistoryData("Example site.Water transfer system.Pipe", "Flow", history.Timestamps, history.PipeWithPumpFlow);
+            writePropertyHistoryData("Example site.Pipe", "Flow", history.Timestamps, history.PipeWithPumpFlow);
 
-            writePropertyHistoryData("Example site.Water transfer system.Flowback pipe", "Flow", history.Timestamps, history.FlowbackPipeFlow);
+            writePropertyHistoryData("Example site.Flowback pipe", "Flow", history.Timestamps, history.FlowbackPipeFlow);
         }
 
         private void clearPropertyHistory(string path, string property)
@@ -130,30 +130,30 @@ namespace EquipmentModelSimulation
 
         public void WriteSimulationCurrentValues(Simulation simulation)
         {
-            writePropertyCurrentValue("Example site.Water transfer system.Pump section.Pump", "Current power", simulation.Pump.Power.CurrentValue);
-            writePropertyCurrentValue("Example site.Water transfer system.Pump section.Pump", "Running", simulation.Pump.IsRunning ? binaryTextOpen : binaryTextClosed);
+            writePropertyCurrentValue("Example site.Pump section.Pump", "Power", simulation.Pump.Power.CurrentValue);
+            writePropertyCurrentValue("Example site.Pump section.Pump", "Running", simulation.Pump.IsRunning ? binaryTextRun : binaryTextStop);
 
-            writePropertyCurrentValue("Example site.Water transfer system.Tank area.Source tank", "Level", simulation.SourceTank.Level.CurrentValue);
+            writePropertyCurrentValue("Example site.Tank area.Source tank", "Level", simulation.SourceTank.Level.CurrentValue);
 
-            writePropertyCurrentValue("Example site.Water transfer system.Tank area.Target tank", "Level", simulation.TargetTank.Level.CurrentValue);
+            writePropertyCurrentValue("Example site.Tank area.Target tank", "Level", simulation.TargetTank.Level.CurrentValue);
 
-            writePropertyCurrentValue("Example site.Water transfer system.Pipe", "Flow", simulation.PipeWithPump.Flow.CurrentValue);
+            writePropertyCurrentValue("Example site.Pipe", "Flow", simulation.PipeWithPump.Flow.CurrentValue);
 
-            writePropertyCurrentValue("Example site.Water transfer system.Flowback pipe", "Flow", simulation.FlowbackPipe.Flow.CurrentValue);
+            writePropertyCurrentValue("Example site.Flowback pipe", "Flow", simulation.FlowbackPipe.Flow.CurrentValue);
         }
 
         public void ClearHistory()
         {
-            clearPropertyHistory("Example site.Water transfer system.Pump section.Pump", "Current power");
-            clearPropertyHistory("Example site.Water transfer system.Pump section.Pump", "Running");
+            clearPropertyHistory("Example site.Pump section.Pump", "Power");
+            clearPropertyHistory("Example site.Pump section.Pump", "Running");
 
-            clearPropertyHistory("Example site.Water transfer system.Tank area.Source tank", "Level");
+            clearPropertyHistory("Example site.Tank area.Source tank", "Level");
 
-            clearPropertyHistory("Example site.Water transfer system.Tank area.Target tank", "Level");
+            clearPropertyHistory("Example site.Tank area.Target tank", "Level");
 
-            clearPropertyHistory("Example site.Water transfer system.Pipe", "Flow");
+            clearPropertyHistory("Example site.Pipe", "Flow");
 
-            clearPropertyHistory("Example site.Water transfer system.Flowback pipe", "Flow");
+            clearPropertyHistory("Example site.Flowback pipe", "Flow");
         }
     }
 }
