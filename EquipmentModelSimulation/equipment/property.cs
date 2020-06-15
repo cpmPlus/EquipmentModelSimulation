@@ -40,11 +40,11 @@
                 currentValue = System.Math.Min(currentValue, MaxValue);
 
                 // Update Max
-                if (Max == null || currentValue > Max)
+                if (currentValue > Max)
                     Max = currentValue;
 
                 // Update Min
-                if (Min == null || currentValue < Min)
+                if (currentValue < Min)
                     Min = currentValue;
 
                 // Update Avg

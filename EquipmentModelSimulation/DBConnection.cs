@@ -53,9 +53,9 @@ namespace EquipmentModelSimulation
                     throw new System.ApplicationException(msg);
                 }
 
-                cDbEnumeration binaryTextEnum = RTDBDriver.Enumerations.GetInstanceByName("Binary Text(1)");
-                binaryTextRun = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Run").First();
-                binaryTextStop = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Stop").First();
+                cDbEnumeration binaryTextEnum = RTDBDriver.Enumerations.GetInstanceByName("Binary Text(6)");
+                binaryTextOn = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "On").First();
+                binaryTextOff = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Off").First();
             }
         }
 
@@ -87,7 +87,7 @@ namespace EquipmentModelSimulation
         public void WriteSimulationHistoryData(SimulationHistory history)
         {
             writePropertyHistoryData("Example site.Pump section.Pump", "Power", history.Timestamps, history.PumpPower);
-            writePropertyHistoryData("Example site.Pump section.Pump", "Running", history.Timestamps, history.PumpIsRunning);
+            writePropertyHistoryData("Example site.Pump section.Pump", "Power state", history.Timestamps, history.PumpIsPowered);
 
             writePropertyHistoryData("Example site.Tank area.Source tank", "Level", history.Timestamps, history.SourceTankLevel);
 
@@ -131,7 +131,7 @@ namespace EquipmentModelSimulation
         public void WriteSimulationCurrentValues(Simulation simulation)
         {
             writePropertyCurrentValue("Example site.Pump section.Pump", "Power", simulation.Pump.Power.CurrentValue);
-            writePropertyCurrentValue("Example site.Pump section.Pump", "Running", simulation.Pump.IsRunning ? binaryTextRun : binaryTextStop);
+            writePropertyCurrentValue("Example site.Pump section.Pump", "Power state", simulation.Pump.IsPowered ? binaryTextOn : binaryTextOff);
 
             writePropertyCurrentValue("Example site.Tank area.Source tank", "Level", simulation.SourceTank.Level.CurrentValue);
 
@@ -145,7 +145,7 @@ namespace EquipmentModelSimulation
         public void ClearHistory()
         {
             clearPropertyHistory("Example site.Pump section.Pump", "Power");
-            clearPropertyHistory("Example site.Pump section.Pump", "Running");
+            clearPropertyHistory("Example site.Pump section.Pump", "Power state");
 
             clearPropertyHistory("Example site.Tank area.Source tank", "Level");
 

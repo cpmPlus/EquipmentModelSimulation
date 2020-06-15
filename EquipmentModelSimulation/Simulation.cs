@@ -75,7 +75,7 @@
             History.Timestamps.Add(SimulateTime);
 
             History.PumpPower.Add(Pump.Power.CurrentValue);
-            History.PumpIsRunning.Add(Pump.IsRunningInt);
+            History.PumpIsPowered.Add(Pump.IsPoweredInt);
 
             History.SourceTankLevel.Add(SourceTank.Level.CurrentValue);
 
@@ -93,12 +93,12 @@
             PipeWithPump.Act(timeStep: timeStep);
 
             // Turn pump off if tank has more than 900 liters of water
-            if (SourceTank.Level.CurrentValue > 900 && !Pump.IsRunning)
-                Pump.IsRunning = true;
+            if (SourceTank.Level.CurrentValue > 900 && !Pump.IsPowered)
+                Pump.IsPowered = true;
 
             // Turn pump on if tank has less than 100 liters of water
-            if (SourceTank.Level.CurrentValue < 100 && Pump.IsRunning)
-                Pump.IsRunning = false;
+            if (SourceTank.Level.CurrentValue < 100 && Pump.IsPowered)
+                Pump.IsPowered = false;
 
             // Case: Simulating current moment
             if (CurrentTimeReached) {

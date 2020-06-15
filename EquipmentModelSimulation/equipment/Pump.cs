@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Media.Animation;
 
 namespace EquipmentModelSimulation
@@ -14,9 +14,9 @@ namespace EquipmentModelSimulation
         public equipment.Property Temperature;
         public System.Collections.Generic.List<Bearing> Bearings;
 
-        public bool IsRunning { get; set; }
+        public bool IsPowered { get; set; }
 
-        public long IsRunningInt { get => IsRunning ? 1 : 0; } // 1 == Run, 16 == Stop
+        public short IsPoweredInt { get => (short)(IsPowered ? 1 : 0); }
 
         public Pump(string name, double nominalPower) : base(name)
         {
@@ -74,7 +74,7 @@ namespace EquipmentModelSimulation
         {
             var step = (Power.MaxValue - Power.MinValue) / (PUMP_LAG / timeStep);
 
-            if (IsRunning)
+            if (IsPowered)
                 Power.CurrentValue += step;
 
             else
