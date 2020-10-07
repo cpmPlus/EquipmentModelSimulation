@@ -1,4 +1,4 @@
-﻿namespace EquipmentModelSimulation
+namespace EquipmentModelSimulation
 {
     class ConsoleGUI
     {
@@ -80,6 +80,10 @@
             Log();
             GetPropertyProgress("Flowback pipe flow", simulation.FlowbackPipe.Flow);
             GetPropertyProgress("Motorized pipe flow", simulation.PipeWithPump.Flow);
+
+            Log();
+            GetPropertyProgress("Variable A", simulation.VariableA);
+            GetPropertyProgress("Variable B", simulation.VariableB);
 
             Log();
             LogElapsedTime(simulation);

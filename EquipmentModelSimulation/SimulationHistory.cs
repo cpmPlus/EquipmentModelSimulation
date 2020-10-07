@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace EquipmentModelSimulation
 {
@@ -16,5 +16,8 @@ namespace EquipmentModelSimulation
         public List<double> FlowbackPipeFlow = new List<double>();
 
         public List<double> PipeWithPumpFlow = new List<double>();
+
+        public List<double> VariableA = new List<double>();
+        public List<double> VariableB = new List<double>();
     }
 }

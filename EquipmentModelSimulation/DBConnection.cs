@@ -12,12 +12,25 @@ namespace EquipmentModelSimulation
         private readonly cDataLoader dataloader = new cDataLoader();
         private cDriverSkeleton RTDBDriver;
 
-        private static readonly string RTDBHost = "wss://localhost/history";
-        private static readonly string RTDBUsername = "username";
-        private static readonly string RTDBPassword = "password";
+        private readonly string RTDBHost;
+        private readonly string RTDBUsername;
+        private readonly string RTDBPassword;
 
-        private cDbEnumerationMember binaryTextOpen;
-        private cDbEnumerationMember binaryTextClosed;
+        private readonly int numberOfSites;
+
+        private readonly string toplevelHierarchyPrefix;
+
+        private cDbEnumerationMember binaryTextOn;
+        private cDbEnumerationMember binaryTextOff;
+
+        public DBConnection(int _numberOfSites, string _RTDBHost, string _RTDBUsername, string _RTDBPassword, string _toplevelHierarchyPrefix)
+        {
+            numberOfSites = _numberOfSites;
+            RTDBHost = _RTDBHost;
+            RTDBUsername = _RTDBUsername;
+            RTDBPassword = _RTDBPassword;
+            toplevelHierarchyPrefix = _toplevelHierarchyPrefix;
+        }
 
         public void ConnectOrThrow()
         {
@@ -86,16 +99,33 @@ namespace EquipmentModelSimulation
 
         public void WriteSimulationHistoryData(SimulationHistory history)
         {
-            writePropertyHistoryData("Example site.Pump section.Pump", "Power", history.Timestamps, history.PumpPower);
-            writePropertyHistoryData("Example site.Pump section.Pump", "Power state", history.Timestamps, history.PumpIsPowered);
+            if (numberOfSites > 1)
+            {
+                for (var site = 1; site <= numberOfSites; site++)
+                {
+                    writeHistoryDataForSite(site, history);
+                }
+            }
+            else
+            {
+                writeHistoryDataForSite(null, history);
+            }
+        }
 
-            writePropertyHistoryData("Example site.Tank area.Source tank", "Level", history.Timestamps, history.SourceTankLevel);
+        private void writeHistoryDataForSite(int? site, SimulationHistory history)
+        {
+            var topLevelHierarchy = getTopLevelHierarchyName(site);
 
-            writePropertyHistoryData("Example site.Tank area.Target tank", "Level", history.Timestamps, history.TargetTankLevel);
+            writePropertyHistoryData($"{topLevelHierarchy}.Pump section.Pump", "Power", history.Timestamps, history.PumpPower);
+            writePropertyHistoryData($"{topLevelHierarchy}.Pump section.Pump", "Power state", history.Timestamps, history.PumpIsPowered);
 
-            writePropertyHistoryData("Example site.Pipe", "Flow", history.Timestamps, history.PipeWithPumpFlow);
+            writePropertyHistoryData($"{topLevelHierarchy}.Tank area.Source tank", "Level", history.Timestamps, history.SourceTankLevel);
 
-            writePropertyHistoryData("Example site.Flowback pipe", "Flow", history.Timestamps, history.FlowbackPipeFlow);
+            writePropertyHistoryData($"{topLevelHierarchy}.Tank area.Target tank", "Level", history.Timestamps, history.TargetTankLevel);
+
+            writePropertyHistoryData($"{topLevelHierarchy}.Pipe", "Flow", history.Timestamps, history.PipeWithPumpFlow);
+
+            writePropertyHistoryData($"{topLevelHierarchy}.Flowback pipe", "Flow", history.Timestamps, history.FlowbackPipeFlow);
         }
 
         private void clearPropertyHistory(string path, string property)
@@ -108,6 +138,23 @@ namespace EquipmentModelSimulation
                 "Path=? AND Property=?",
                 path,
                 property);
+
+            var gdi = RTDBDriver.GetGraphDataIterator(parameters);
+
+            gdi.DeleteRange();
+
+            gdi.Close();
+        }
+
+        private void clearVariableHistory(string name)
+        {
+            cGraphFetchParameters parameters = cGraphFetchParameters.CreateRawFetch(
+                RTDBDriver.Classes["ProcessHistory"],
+                DateTime.UtcNow.AddDays(-1000),
+                DateTime.UtcNow,
+                int.MaxValue - 1,
+                "Variable=?",
+                name);
 
             var gdi = RTDBDriver.GetGraphDataIterator(parameters);
 
@@ -130,30 +177,88 @@ namespace EquipmentModelSimulation
 
         public void WriteSimulationCurrentValues(Simulation simulation)
         {
-            writePropertyCurrentValue("Example site.Pump section.Pump", "Power", simulation.Pump.Power.CurrentValue);
-            writePropertyCurrentValue("Example site.Pump section.Pump", "Power state", simulation.Pump.IsPowered ? binaryTextOn : binaryTextOff);
+            if (numberOfSites > 1)
+            {
+                for (var site = 1; site <= numberOfSites; site++)
+                {
+                    writeCurrentValuesForSite(site, simulation);
+                }
+            }
+            else
+            {
+                writeCurrentValuesForSite(null, simulation);
+            }
 
-            writePropertyCurrentValue("Example site.Tank area.Source tank", "Level", simulation.SourceTank.Level.CurrentValue);
+            writeCurrentValueForVariable("CalcTutorial_A", simulation.VariableA.CurrentValue, simulation.SimulateTime);
+            writeCurrentValueForVariable("CalcTutorial_B", simulation.VariableB.CurrentValue, simulation.SimulateTime);
+        }
 
-            writePropertyCurrentValue("Example site.Tank area.Target tank", "Level", simulation.TargetTank.Level.CurrentValue);
+        private void writeCurrentValueForVariable(string name, double currentValue, DateTime time)
+        {
+            var variable = (cDbVariable)RTDBDriver
+                .Classes["Variable"]
+                .Instances[name];
 
-            writePropertyCurrentValue("Example site.Pipe", "Flow", simulation.PipeWithPump.Flow.CurrentValue);
+            var cv = variable.pCurrentValue.BeginUpdate();
+            cv.Value = currentValue;
+            cv.TimeUTC = time;
+            cv.CommitChanges();
+        }
 
-            writePropertyCurrentValue("Example site.Flowback pipe", "Flow", simulation.FlowbackPipe.Flow.CurrentValue);
+        private void writeCurrentValuesForSite(int? site, Simulation simulation)
+        {
+            var topLevelHierarchy = getTopLevelHierarchyName(site);
+
+            writePropertyCurrentValue($"{topLevelHierarchy}.Pump section.Pump", "Power", simulation.Pump.Power.CurrentValue);
+            writePropertyCurrentValue($"{topLevelHierarchy}.Pump section.Pump", "Power state", simulation.Pump.IsPowered ? binaryTextOn : binaryTextOff);
+
+            writePropertyCurrentValue($"{topLevelHierarchy}.Tank area.Source tank", "Level", simulation.SourceTank.Level.CurrentValue);
+
+            writePropertyCurrentValue($"{topLevelHierarchy}.Tank area.Target tank", "Level", simulation.TargetTank.Level.CurrentValue);
+
+            writePropertyCurrentValue($"{topLevelHierarchy}.Pipe", "Flow", simulation.PipeWithPump.Flow.CurrentValue);
+
+            writePropertyCurrentValue($"{topLevelHierarchy}.Flowback pipe", "Flow", simulation.FlowbackPipe.Flow.CurrentValue);
         }
 
         public void ClearHistory()
         {
-            clearPropertyHistory("Example site.Pump section.Pump", "Power");
-            clearPropertyHistory("Example site.Pump section.Pump", "Power state");
+            if (numberOfSites > 1)
+            {
+                for (var site = 1; site <= numberOfSites; site++)
+                {
+                    clearHistoryForSite(site);
+                }
+            }
+            else
+            {
+                clearHistoryForSite(null);
+            }
 
-            clearPropertyHistory("Example site.Tank area.Source tank", "Level");
+            clearVariableHistory("CalcTutorial_A");
+            clearVariableHistory("CalcTutorial_B");
+            clearVariableHistory("CalcTutorial_C");
+        }
 
-            clearPropertyHistory("Example site.Tank area.Target tank", "Level");
+        private void clearHistoryForSite(int? site)
+        {
+            var topLevelHierarchy = getTopLevelHierarchyName(site);
 
-            clearPropertyHistory("Example site.Pipe", "Flow");
+            clearPropertyHistory($"{topLevelHierarchy}.Pump section.Pump", "Power");
+            clearPropertyHistory($"{topLevelHierarchy}.Pump section.Pump", "Power state");
 
-            clearPropertyHistory("Example site.Flowback pipe", "Flow");
+            clearPropertyHistory($"{topLevelHierarchy}.Tank area.Source tank", "Level");
+
+            clearPropertyHistory($"{topLevelHierarchy}.Tank area.Target tank", "Level");
+
+            clearPropertyHistory($"{topLevelHierarchy}.Pipe", "Flow");
+
+            clearPropertyHistory($"{topLevelHierarchy}.Flowback pipe", "Flow");
+        }
+
+        private string getTopLevelHierarchyName(int? site)
+        {
+            return $"{toplevelHierarchyPrefix}{(site != null ? " " + site : "")}";
         }
     }
 }

@@ -1,12 +1,14 @@
-﻿namespace EquipmentModelSimulation
+using NDesk.Options;
+
+namespace EquipmentModelSimulation
 {
     class Program
     {
-        private static readonly double DATA_POINTS_PER_SECOND = 1;          // Times per second
-        private static readonly int POPULATED_HISTORY_LENGTH = 30 * 60;            // Seconds (2592000 s = 30 days)
+        private static readonly double DATA_POINTS_PER_SECOND = 5;          // Times per second
+        private static readonly int POPULATED_HISTORY_LENGTH = 1 * 24 * 60 * 60;            // Seconds (2592000 s = 30 days)
         private static readonly int MAX_RENDERS_PER_SECOND = 5;
 
-        private static void Main()
+        private static void Main(string[] args)
         {
             // Initialize the interface
             ConsoleGUI gui = new ConsoleGUI();
@@ -30,7 +32,24 @@
             System.DateTime lastRender = System.DateTime.MinValue;
             System.DateTime loopStart;
 
-            using (DBConnection dbConnection = new DBConnection())
+            int numberOfSites = 1;
+            string RTDBHost = "wss://10.58.44.108/history";
+            string RTDBUsername = ".\\testmaindbadmin";
+            string RTDBPassword = "fM5Yhv76Of0Z*O";
+            string toplevelHierarchyPrefix = "Example site";
+
+            var p = new OptionSet()
+            {
+                { "s|sites=", "Number of sites", v => numberOfSites = int.Parse(v) },
+                { "h|host=", "Hostname", v => RTDBHost = v },
+                { "u|user=", "", v => RTDBUsername = v },
+                { "p|password=", "", v => RTDBPassword = v },
+                { "t|topLevelPrefix=", "", v => toplevelHierarchyPrefix = v },
+            };
+
+            p.Parse(args);
+
+            using (DBConnection dbConnection = new DBConnection(numberOfSites, RTDBHost, RTDBUsername, RTDBPassword, toplevelHierarchyPrefix))
             {
                 dbConnection.ConnectOrThrow();
 

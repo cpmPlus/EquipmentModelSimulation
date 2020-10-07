@@ -1,4 +1,6 @@
-﻿namespace EquipmentModelSimulation
+﻿using System;
+
+namespace EquipmentModelSimulation
 {
     class Simulation
     {
@@ -30,6 +32,9 @@
         public Pipe PipeWithPump;
         public Pump Pump;
 
+        public equipment.Property VariableA;
+        public equipment.Property VariableB;
+
         public SimulationHistory History = new SimulationHistory();
 
         public Simulation(System.DateTime simulateFrom)
@@ -58,6 +63,9 @@
                 sourceTank: SourceTank,
                 targetTank: TargetTank,
                 pump: Pump);
+
+            VariableA = new equipment.Property(0, 1);
+            VariableB = new equipment.Property(0, 1);
         }
 
         public System.TimeSpan GetElapsedTime()
@@ -84,6 +92,9 @@
             History.FlowbackPipeFlow.Add(FlowbackPipe.Flow.CurrentValue);
 
             History.PipeWithPumpFlow.Add(PipeWithPump.Flow.CurrentValue);
+
+            History.VariableA.Add(VariableA.CurrentValue);
+            History.VariableB.Add(VariableB.CurrentValue);
         }
 
         public void RunLoop(double timeStep)
@@ -99,6 +110,9 @@
             // Turn pump on if tank has less than 100 liters of water
             if (SourceTank.Level.CurrentValue < 100 && Pump.IsPowered)
                 Pump.IsPowered = false;
+
+            VariableA.CurrentValue = Math.Sin((SimulateTime - SimulateFrom).TotalSeconds / 3) / 2 + 0.5;
+            VariableB.CurrentValue = Math.Sin((SimulateTime - SimulateFrom).TotalSeconds / 15) / 2 + 0.5;
 
             // Case: Simulating current moment
             if (CurrentTimeReached) {
