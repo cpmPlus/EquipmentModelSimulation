@@ -97,6 +97,24 @@ namespace EquipmentModelSimulation
             gdi.Close();
         }
 
+        private void writeVariableHistoryData<T>(string name, List<System.DateTime> timestamps, List<T> values)
+        {
+            cGraphFetchParameters parameters = cGraphFetchParameters.CreateScalarFetch(
+                RTDBDriver.Classes["ProcessHistory"],
+                DateTime.UtcNow,
+                "Variable=?",
+                name);
+
+            var gdi = RTDBDriver.GetGraphDataIterator(parameters);
+
+            for (var i = 0; i < timestamps.Count; i++)
+            {
+                gdi.Write(timestamps[i], values[i], cValueStatus.OK);
+            }
+
+            gdi.Close();
+        }
+
         public void WriteSimulationHistoryData(SimulationHistory history)
         {
             if (numberOfSites > 1)
@@ -110,6 +128,9 @@ namespace EquipmentModelSimulation
             {
                 writeHistoryDataForSite(null, history);
             }
+
+            writeVariableHistoryData("CalcTutorial_A", history.Timestamps, history.VariableA);
+            writeVariableHistoryData("CalcTutorial_B", history.Timestamps, history.VariableB);
         }
 
         private void writeHistoryDataForSite(int? site, SimulationHistory history)

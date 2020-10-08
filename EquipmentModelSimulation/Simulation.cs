@@ -78,6 +78,18 @@ namespace EquipmentModelSimulation
             return SimulateTime >= System.DateTime.UtcNow;
         }
 
+        public DateTime GetNextPointTime(double timeStep)
+        {
+            return SimulateTime.AddSeconds(timeStep);
+        }
+
+        public bool IsNextStepAfter(DateTime moment, double timeStep)
+        {
+            var next = GetNextPointTime(timeStep);
+
+            return moment.CompareTo(next) < 0;
+        }
+
         private void addCurrentValuesToHistory()
         {
             History.Timestamps.Add(SimulateTime);
@@ -114,15 +126,10 @@ namespace EquipmentModelSimulation
             VariableA.CurrentValue = Math.Sin((SimulateTime - SimulateFrom).TotalSeconds / 3) / 2 + 0.5;
             VariableB.CurrentValue = Math.Sin((SimulateTime - SimulateFrom).TotalSeconds / 15) / 2 + 0.5;
 
-            // Case: Simulating current moment
-            if (CurrentTimeReached) {
-                SimulateTime = System.DateTime.UtcNow;
-            }
-            // Case: Still calculating history
-            else
-            {
-                SimulateTime = SimulateTime.AddSeconds(timeStep);
+            SimulateTime = SimulateTime.AddSeconds(timeStep);
 
+            // Case: Still calculating history
+            if (!CurrentTimeReached) {
                 addCurrentValuesToHistory();
 
                 // Check if history calculation was finished

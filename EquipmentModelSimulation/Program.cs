@@ -1,3 +1,4 @@
+using System;
 using NDesk.Options;
 
 namespace EquipmentModelSimulation
@@ -21,16 +22,12 @@ namespace EquipmentModelSimulation
             // Calculate the length of a singe time step
             double timeStep = 1.0 / DATA_POINTS_PER_SECOND;
 
-            gui.Clear();
-            gui.Log();
-            gui.Log("Generating simulated history data...");
-
             Simulation simulation = new Simulation(
-                simulateFrom: System.DateTime.UtcNow.AddSeconds(-POPULATED_HISTORY_LENGTH));
+                simulateFrom: DateTime.UtcNow.AddSeconds(-POPULATED_HISTORY_LENGTH));
 
             // This variable stores time of the last render
-            System.DateTime lastRender = System.DateTime.MinValue;
-            System.DateTime loopStart;
+            DateTime lastRender = DateTime.MinValue;
+            DateTime loopStart;
 
             int numberOfSites = 1;
             string RTDBHost = "wss://10.58.44.108/history";
@@ -49,18 +46,27 @@ namespace EquipmentModelSimulation
 
             p.Parse(args);
 
+            gui.Log();
+            Console.Write("Connecting to the database...", false);
+
             using (DBConnection dbConnection = new DBConnection(numberOfSites, RTDBHost, RTDBUsername, RTDBPassword, toplevelHierarchyPrefix))
             {
                 dbConnection.ConnectOrThrow();
+                Console.WriteLine("Done");
 
                 bool simulationHistoryDataWritten = false;
 
+                Console.Write("Clearing previous history values...", false);
+
                 // Clear all previous history data for the equipment properties
                 dbConnection.ClearHistory();
+                Console.WriteLine("Done");
+
+                Console.Write("Generating history data...", false);
 
                 while (true)
                 {
-                    loopStart = System.DateTime.UtcNow;
+                    loopStart = DateTime.UtcNow;
 
                     // Run one simulation loop
                     simulation.RunLoop(timeStep);
@@ -71,28 +77,42 @@ namespace EquipmentModelSimulation
                         // Case: History data has not been written to the database
                         if (!simulationHistoryDataWritten)
                         {
+                            Console.WriteLine("Done");
+
+                            Console.Write("Writing history data...", false);
+
                             dbConnection.WriteSimulationHistoryData(simulation.History);
                             simulationHistoryDataWritten = true;
+
+                            Console.WriteLine("Done");
                         }
 
                         // Case: Enough time has been passed since the last render
                         // > Render again
-                        if (System.DateTime.UtcNow.Subtract(lastRender).TotalMilliseconds > 1000 / MAX_RENDERS_PER_SECOND)
+                        if (DateTime.UtcNow.Subtract(lastRender).TotalMilliseconds > 1000 / MAX_RENDERS_PER_SECOND)
                         {
                             gui.DrawSystem(simulation);
-                            lastRender = System.DateTime.UtcNow;
+                            lastRender = DateTime.UtcNow;
                         }
 
                         // Update the current values in the database to match the simulation values
                         dbConnection.WriteSimulationCurrentValues(simulation);
 
-                        // Get loop duration
-                        var loopDuration = (System.DateTime.UtcNow - loopStart).TotalMilliseconds;
+                        var now = DateTime.UtcNow;
+                        var next = simulation.SimulateTime.AddSeconds(timeStep);
 
-                        // Sleep for a while, max out to zero
-                        var sleepTime = System.Math.Max(timeStep * 1000 - loopDuration, 0);
+                        var nextPointInFuture = simulation.IsNextStepAfter(DateTime.UtcNow, timeStep);
 
-                        System.Threading.Thread.Sleep((int)sleepTime);
+                        if (nextPointInFuture)
+                        {
+                            // Get loop duration
+                            var loopDuration = (DateTime.UtcNow - loopStart).TotalMilliseconds;
+
+                            // Sleep for a while, max out to zero
+                            var sleepTime = System.Math.Max(timeStep * 1000 - loopDuration, 0);
+
+                            System.Threading.Thread.Sleep((int)sleepTime);
+                        }
                     }
                 }
             }
