@@ -12,24 +12,6 @@ namespace EquipmentModelSimulation
 
         private static void Main(string[] args)
         {
-            // Initialize the interface
-            ConsoleGUI gui = new ConsoleGUI();
-
-            gui.Log();
-            gui.Log("Welcome to the Equipment Model simulation!");
-            gui.Log("------------------------------------------");
-            gui.Log();
-
-            // Calculate the length of a singe time step
-            double timeStep = 1.0 / DATA_POINTS_PER_SECOND;
-
-            Simulation simulation = new Simulation(
-                simulateFrom: DateTime.UtcNow.AddSeconds(-POPULATED_HISTORY_LENGTH));
-
-            // This variable stores time of the last render
-            DateTime lastRender = DateTime.MinValue;
-            DateTime loopStart;
-
             int numberOfSites = 1;
             string RTDBHost = null;
             string RTDBUsername = null;
@@ -61,6 +43,24 @@ namespace EquipmentModelSimulation
             {
                 throw new System.ArgumentException("Define password using -p <password>");
             }
+
+            // Initialize the interface
+            ConsoleGUI gui = new ConsoleGUI();
+
+            gui.Log();
+            gui.Log("Welcome to the Equipment Model simulation!");
+            gui.Log("------------------------------------------");
+            gui.Log();
+
+            // Calculate the length of a singe time step
+            double timeStep = 1.0 / DATA_POINTS_PER_SECOND;
+
+            Simulation simulation = new Simulation(
+                simulateFrom: DateTime.UtcNow.AddSeconds(-POPULATED_HISTORY_LENGTH));
+
+            // This variable stores time of the last render
+            DateTime lastRender = DateTime.MinValue;
+            DateTime loopStart;
 
             gui.Log();
             Console.Write("Connecting to the database...", false);
