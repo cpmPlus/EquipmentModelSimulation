@@ -35,6 +35,7 @@ namespace EquipmentModelSimulation
             string RTDBUsername = null;
             string RTDBPassword = null;
             string toplevelHierarchyPrefix = "Example site";
+            double writeToFutureSeconds = 0;
 
             var p = new OptionSet()
             {
@@ -43,6 +44,7 @@ namespace EquipmentModelSimulation
                 { "u|user=", "", v => RTDBUsername = v },
                 { "p|password=", "", v => RTDBPassword = v },
                 { "t|topLevelPrefix=", "", v => toplevelHierarchyPrefix = v },
+                { "f|writeToFuture=", "", v => writeToFutureSeconds = double.Parse(v) },
             };
 
             p.Parse(args);
@@ -112,7 +114,7 @@ namespace EquipmentModelSimulation
                         // Update the current values in the database to match the simulation values
                         dbConnection.WriteSimulationCurrentValues(simulation);
 
-                        var nextPointInFuture = simulation.IsNextStepAfter(DateTime.UtcNow, timeStep);
+                        var nextPointInFuture = simulation.IsNextStepAfter(DateTime.UtcNow, timeStep, writeToFutureSeconds);
 
                         if (nextPointInFuture)
                         {

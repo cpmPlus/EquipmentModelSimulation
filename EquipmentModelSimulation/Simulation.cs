@@ -83,9 +83,9 @@ namespace EquipmentModelSimulation
             return SimulateTime.AddSeconds(timeStep);
         }
 
-        public bool IsNextStepAfter(DateTime moment, double timeStep)
+        public bool IsNextStepAfter(DateTime moment, double timeStep, double writeToFutureSeconds = 0)
         {
-            var next = GetNextPointTime(timeStep);
+            var next = GetNextPointTime(timeStep).AddSeconds(-writeToFutureSeconds);
 
             return moment.CompareTo(next) < 0;
         }
