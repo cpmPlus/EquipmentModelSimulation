@@ -1,5 +1,4 @@
 using System;
-using NDesk.Options;
 
 namespace EquipmentModelSimulation
 {
@@ -12,37 +11,7 @@ namespace EquipmentModelSimulation
 
         private static void Main(string[] args)
         {
-            int numberOfSites = 1;
-            string RTDBHost = null;
-            string RTDBUsername = null;
-            string RTDBPassword = null;
-            string toplevelHierarchyPrefix = "Example site";
-            double writeToFutureSeconds = 0;
-
-            var p = new OptionSet()
-            {
-                { "s|sites=", "Number of sites", v => numberOfSites = int.Parse(v) },
-                { "h|host=", "Hostname", v => RTDBHost = v },
-                { "u|user=", "", v => RTDBUsername = v },
-                { "p|password=", "", v => RTDBPassword = v },
-                { "t|topLevelPrefix=", "", v => toplevelHierarchyPrefix = v },
-                { "f|writeToFuture=", "", v => writeToFutureSeconds = double.Parse(v) },
-            };
-
-            p.Parse(args);
-
-            if (RTDBHost == null)
-            {
-                throw new System.ArgumentException("Define hostname using -h <hostname>");
-            }
-            if (RTDBUsername == null)
-            {
-                throw new System.ArgumentException("Define username using -u <username>");
-            }
-            if (RTDBPassword == null)
-            {
-                throw new System.ArgumentException("Define password using -p <password>");
-            }
+            Arguments.ParseArgs(args);
 
             // Initialize the interface
             ConsoleGUI gui = new ConsoleGUI();
@@ -65,7 +34,12 @@ namespace EquipmentModelSimulation
             gui.Log();
             Console.Write("Connecting to the database...", false);
 
-            using (DBConnection dbConnection = new DBConnection(numberOfSites, RTDBHost, RTDBUsername, RTDBPassword, toplevelHierarchyPrefix))
+            using (DBConnection dbConnection = new DBConnection(
+                Arguments.NumberOfSites,
+                Arguments.Host,
+                Arguments.Username,
+                Arguments.Password,
+                Arguments.ToplevelHierarchyPrefix))
             {
                 dbConnection.ConnectOrThrow();
                 Console.WriteLine("Done");
@@ -114,7 +88,7 @@ namespace EquipmentModelSimulation
                         // Update the current values in the database to match the simulation values
                         dbConnection.WriteSimulationCurrentValues(simulation);
 
-                        var nextPointInFuture = simulation.IsNextStepAfter(DateTime.UtcNow, timeStep, writeToFutureSeconds);
+                        var nextPointInFuture = simulation.IsNextStepAfter(DateTime.UtcNow, timeStep, Arguments.WriteToFutureSeconds);
 
                         if (nextPointInFuture)
                         {

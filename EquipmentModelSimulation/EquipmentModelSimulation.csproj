@@ -41,6 +41,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Arguments.cs" />
     <Compile Include="SimulationHistory.cs" />
     <Compile Include="DBConnection.cs" />
     <Compile Include="ConsoleGUI.cs" />
