@@ -5,8 +5,9 @@ namespace EquipmentModelSimulation
 {
     class Program
     {
-        private static readonly double DATA_POINTS_PER_SECOND = 5;          // Times per second
-        private static readonly int POPULATED_HISTORY_LENGTH = 1 * 24 * 60 * 60;            // Seconds (2592000 s = 30 days)
+        private static readonly double DATA_POINTS_PER_SECOND = 1;          // Times per second
+        //private static readonly int POPULATED_HISTORY_LENGTH = 1 * 24 * 60 * 60;            // Seconds (2592000 s = 30 days)
+        private static readonly int POPULATED_HISTORY_LENGTH = 1  * 60;            // Seconds (2592000 s = 30 days)
         private static readonly int MAX_RENDERS_PER_SECOND = 5;
 
         private static void Main(string[] args)
@@ -30,9 +31,9 @@ namespace EquipmentModelSimulation
             DateTime loopStart;
 
             int numberOfSites = 1;
-            string RTDBHost = "wss://10.58.44.108/history";
-            string RTDBUsername = ".\\testmaindbadmin";
-            string RTDBPassword = "fM5Yhv76Of0Z*O";
+            string RTDBHost = null;
+            string RTDBUsername = null;
+            string RTDBPassword = null;
             string toplevelHierarchyPrefix = "Example site";
 
             var p = new OptionSet()
@@ -45,6 +46,19 @@ namespace EquipmentModelSimulation
             };
 
             p.Parse(args);
+
+            if (RTDBHost == null)
+            {
+                throw new System.ArgumentException("Define hostname using -h <hostname>");
+            }
+            if (RTDBUsername == null)
+            {
+                throw new System.ArgumentException("Define username using -u <username>");
+            }
+            if (RTDBPassword == null)
+            {
+                throw new System.ArgumentException("Define password using -p <password>");
+            }
 
             gui.Log();
             Console.Write("Connecting to the database...", false);
@@ -97,9 +111,6 @@ namespace EquipmentModelSimulation
 
                         // Update the current values in the database to match the simulation values
                         dbConnection.WriteSimulationCurrentValues(simulation);
-
-                        var now = DateTime.UtcNow;
-                        var next = simulation.SimulateTime.AddSeconds(timeStep);
 
                         var nextPointInFuture = simulation.IsNextStepAfter(DateTime.UtcNow, timeStep);
 
