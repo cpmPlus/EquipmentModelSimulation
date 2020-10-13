@@ -5,8 +5,6 @@ namespace EquipmentModelSimulation
     class Program
     {
         private static readonly double DATA_POINTS_PER_SECOND = 1;          // Times per second
-        //private static readonly int POPULATED_HISTORY_LENGTH = 1 * 24 * 60 * 60;            // Seconds (2592000 s = 30 days)
-        private static readonly int POPULATED_HISTORY_LENGTH = 1  * 60;            // Seconds (2592000 s = 30 days)
         private static readonly int MAX_RENDERS_PER_SECOND = 5;
 
         private static void Main(string[] args)
@@ -25,7 +23,7 @@ namespace EquipmentModelSimulation
             double timeStep = 1.0 / DATA_POINTS_PER_SECOND;
 
             Simulation simulation = new Simulation(
-                simulateFrom: DateTime.UtcNow.AddSeconds(-POPULATED_HISTORY_LENGTH));
+                simulateFrom: DateTime.UtcNow.AddSeconds(-Arguments.PopulateHistoryLength));
 
             // This variable stores time of the last render
             DateTime lastRender = DateTime.MinValue;
