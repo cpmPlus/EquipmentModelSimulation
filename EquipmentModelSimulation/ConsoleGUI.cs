@@ -5,15 +5,16 @@ namespace EquipmentModelSimulation
         public static readonly int PROGRESS_LENGTH = 60;
         public static readonly int MAXIMUM_ROW_LENGTH = 100;
 
-        public void Log(string message = "", bool lineBreak = true)
+        public void Log(string message = "", bool lineBreak = true, bool? endPadding = null)
         {
             var pad = System.Console.CursorLeft == 0 ? "   " : "";
             var end = lineBreak ? "\n" : "";
             var row = $"{pad}{message}";
 
             var endOfRowLength = System.Math.Max(System.Console.WindowWidth - row.Length - 1, 0);
+            var endPaddingStr = endPadding ?? lineBreak ? new string(' ', endOfRowLength) : "";
 
-            System.Console.Write($"{row}{new string(' ', endOfRowLength)}{end}");
+            System.Console.Write($"{row}{endPaddingStr}{end}");
         }
 
         public void GetPropertyProgress(string name, equipment.Property property)

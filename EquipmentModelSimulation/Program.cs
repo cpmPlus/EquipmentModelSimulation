@@ -29,7 +29,7 @@ namespace EquipmentModelSimulation
             DateTime loopStart;
 
             gui.Log();
-            Console.Write("Connecting to the database...", false);
+            gui.Log("Connecting to the database...", false);
 
             using (DBConnection dbConnection = new DBConnection(
                 Arguments.NumberOfSites,
@@ -39,17 +39,17 @@ namespace EquipmentModelSimulation
                 Arguments.ToplevelHierarchyPrefix))
             {
                 dbConnection.ConnectOrThrow();
-                Console.WriteLine("Done");
+                gui.Log("Done");
 
                 bool simulationHistoryDataWritten = false;
 
-                Console.Write("Clearing previous history values...", false);
+                gui.Log("Clearing previous history values...", false);
 
                 // Clear all previous history data for the equipment properties
                 dbConnection.ClearHistory();
-                Console.WriteLine("Done");
+                gui.Log("Done");
 
-                Console.Write("Generating history data...", false);
+                gui.Log("Generating history data...", false);
 
                 while (true)
                 {
@@ -64,14 +64,14 @@ namespace EquipmentModelSimulation
                         // Case: History data has not been written to the database
                         if (!simulationHistoryDataWritten)
                         {
-                            Console.WriteLine("Done");
+                            gui.Log("Done");
 
-                            Console.Write("Writing history data...", false);
+                            gui.Log("Writing history data...", false);
 
                             dbConnection.WriteSimulationHistoryData(simulation.History);
                             simulationHistoryDataWritten = true;
 
-                            Console.WriteLine("Done");
+                            gui.Log("Done");
                         }
 
                         // Case: Enough time has been passed since the last render
