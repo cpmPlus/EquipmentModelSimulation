@@ -4,7 +4,6 @@ namespace EquipmentModelSimulation
 {
     class Program
     {
-        private static readonly double DATA_POINTS_PER_SECOND = 1;          // Times per second
         private static readonly int MAX_RENDERS_PER_SECOND = 5;
 
         private static void Main(string[] args)
@@ -20,7 +19,7 @@ namespace EquipmentModelSimulation
             gui.Log();
 
             // Calculate the length of a singe time step
-            double timeStep = 1.0 / DATA_POINTS_PER_SECOND;
+            double timeStep = 1.0 / Arguments.DataPointsPerSecond;
 
             Simulation simulation = new Simulation(
                 simulateFrom: DateTime.UtcNow.AddSeconds(-Arguments.PopulateHistoryLength));

@@ -13,6 +13,7 @@ namespace EquipmentModelSimulation
         public static string ToplevelHierarchyPrefix { get; set; } = "Example site";
         public static double WriteToFutureSeconds { get; set; } = 0;
         public static int PopulateHistoryLength { get; set; } = 30 * 24 * 60 * 60;
+        public static double DataPointsPerSecond { get; set; } = 1;
 
         public static void ParseArgs(string[] args)
         {
@@ -54,6 +55,7 @@ namespace EquipmentModelSimulation
                             throw new System.ArgumentException($"Invalid value for parameter -l, --length: '{v}'");
                         }
                     } },
+                { "d|dataPointsPerSecond=", "How many data points to write per second. Default: 1", v => DataPointsPerSecond = double.Parse(v) }
             };
 
             p.Parse(args);
