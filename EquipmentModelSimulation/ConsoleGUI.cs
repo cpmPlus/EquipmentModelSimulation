@@ -1,3 +1,5 @@
+using System;
+
 namespace EquipmentModelSimulation
 {
     class ConsoleGUI
@@ -37,22 +39,38 @@ namespace EquipmentModelSimulation
             return $"«{new string('■', barCount)}{new string('·', emptyCount)}»";
         }
 
-        public void LogElapsedTime(Simulation simulation)
+        public string GetTimeDurationString(TimeSpan timeSpan)
         {
-            var msg = "Simulation time elapsed";
-
-            var timeSpan = simulation.GetElapsedTime();
+            var msg = "";
 
             if (timeSpan.Days > 0)
-                msg += $" {timeSpan.Days} days,";
+                msg += $"{timeSpan.Days} days, ";
 
             if (timeSpan.Hours > 0)
-                msg += $" {timeSpan.Hours} hours,";
+                msg += $"{timeSpan.Hours} hours, ";
 
             if (timeSpan.Minutes > 0)
-                msg += $" {timeSpan.Minutes} minutes,";
+                msg += $"{timeSpan.Minutes} minutes, ";
 
-            msg += $" {timeSpan.Seconds} seconds";
+            msg += $"{timeSpan.Seconds} seconds";
+
+            return msg;
+        }
+
+        public void LogElapsedTime(Simulation simulation)
+        {
+            var elapsedTimeSpan = simulation.GetElapsedTime();
+
+            var msg = $"Simulation time elapsed {GetTimeDurationString(elapsedTimeSpan)}";
+
+            Log(msg);
+        }
+
+        public void LogDelay(Simulation simulation)
+        {
+            var delay = DateTime.UtcNow - simulation.SimulateTime;
+
+            var msg = $"Delay {GetTimeDurationString(delay)}";
 
             Log(msg);
         }
@@ -88,6 +106,9 @@ namespace EquipmentModelSimulation
 
             Log();
             LogElapsedTime(simulation);
+
+            Log();
+            LogDelay(simulation);
         }
     }
 }
