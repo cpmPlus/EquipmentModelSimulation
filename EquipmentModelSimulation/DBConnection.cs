@@ -20,9 +20,6 @@ namespace EquipmentModelSimulation
 
         private readonly string toplevelHierarchyPrefix;
 
-        private cDbEnumerationMember binaryTextOn;
-        private cDbEnumerationMember binaryTextOff;
-
         public DBConnection(int _numberOfSites, string _RTDBHost, string _RTDBUsername, string _RTDBPassword, string _toplevelHierarchyPrefix)
         {
             numberOfSites = _numberOfSites;
@@ -65,10 +62,6 @@ namespace EquipmentModelSimulation
                     string msg = System.Text.Encoding.UTF8.GetString(memoryStream.GetBuffer());
                     throw new System.ApplicationException(msg);
                 }
-
-                cDbEnumeration binaryTextEnum = RTDBDriver.Enumerations.GetInstanceByName("Binary Text(6)");
-                binaryTextOn = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "On").First();
-                binaryTextOff = binaryTextEnum.Cast<cDbEnumerationMember>().Where(a => a.Text == "Off").First();
             }
         }
 
@@ -184,16 +177,19 @@ namespace EquipmentModelSimulation
             gdi.Close();
         }
 
-        private void writePropertyCurrentValue<T>(string path, string property, T value)
+        private void writePropertyCurrentValue<T>(string path, string property, T value, DateTime time)
         {
             var instance = RTDBDriver
                         .Classes["Path"]
                         .Instances
                         .GetInstanceByName(path);
 
-            instance = instance.BeginUpdate();
-            instance[property] = value;
-            instance.CommitChanges();
+            var cvId = instance.Class.GetProperty(property).GetLowLevelValue(instance);
+
+            var cv = (cDbCurrentValue)RTDBDriver.Classes["CurrentValue"].Instances[cvId].BeginUpdate();
+            cv.Value = value;
+            cv.TimeUTC = time;
+            cv.CommitChanges();
         }
 
         public void WriteSimulationCurrentValues(Simulation simulation)
@@ -230,16 +226,16 @@ namespace EquipmentModelSimulation
         {
             var topLevelHierarchy = getTopLevelHierarchyName(site);
 
-            writePropertyCurrentValue($"{topLevelHierarchy}.Pump section.Pump", "Power", simulation.Pump.Power.CurrentValue);
-            writePropertyCurrentValue($"{topLevelHierarchy}.Pump section.Pump", "Power state", simulation.Pump.IsPowered ? binaryTextOn : binaryTextOff);
+            writePropertyCurrentValue($"{topLevelHierarchy}.Pump section.Pump", "Power", simulation.Pump.Power.CurrentValue, simulation.SimulateTime);
+            writePropertyCurrentValue($"{topLevelHierarchy}.Pump section.Pump", "Power state", simulation.Pump.IsPoweredInt, simulation.SimulateTime);
 
-            writePropertyCurrentValue($"{topLevelHierarchy}.Tank area.Source tank", "Level", simulation.SourceTank.Level.CurrentValue);
+            writePropertyCurrentValue($"{topLevelHierarchy}.Tank area.Source tank", "Level", simulation.SourceTank.Level.CurrentValue, simulation.SimulateTime);
 
-            writePropertyCurrentValue($"{topLevelHierarchy}.Tank area.Target tank", "Level", simulation.TargetTank.Level.CurrentValue);
+            writePropertyCurrentValue($"{topLevelHierarchy}.Tank area.Target tank", "Level", simulation.TargetTank.Level.CurrentValue, simulation.SimulateTime);
 
-            writePropertyCurrentValue($"{topLevelHierarchy}.Pipe", "Flow", simulation.PipeWithPump.Flow.CurrentValue);
+            writePropertyCurrentValue($"{topLevelHierarchy}.Pipe", "Flow", simulation.PipeWithPump.Flow.CurrentValue, simulation.SimulateTime);
 
-            writePropertyCurrentValue($"{topLevelHierarchy}.Flowback pipe", "Flow", simulation.FlowbackPipe.Flow.CurrentValue);
+            writePropertyCurrentValue($"{topLevelHierarchy}.Flowback pipe", "Flow", simulation.FlowbackPipe.Flow.CurrentValue, simulation.SimulateTime);
         }
 
         public void ClearHistory()
