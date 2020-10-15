@@ -269,8 +269,10 @@ namespace EquipmentModelSimulation
             clearPropertyHistory($"{topLevelHierarchy}.Pump section.Pump", "Power state");
 
             clearPropertyHistory($"{topLevelHierarchy}.Tank area.Source tank", "Level");
+            clearPropertyHistory($"{topLevelHierarchy}.Tank area.Source tank", "ContentsVolume");
 
             clearPropertyHistory($"{topLevelHierarchy}.Tank area.Target tank", "Level");
+            clearPropertyHistory($"{topLevelHierarchy}.Tank area.Target tank", "ContentsVolume");
 
             clearPropertyHistory($"{topLevelHierarchy}.Pipe", "Flow");
 
