@@ -189,6 +189,7 @@ namespace EquipmentModelSimulation
             var cv = (cDbCurrentValue)RTDBDriver.Classes["CurrentValue"].Instances[cvId].BeginUpdate();
             cv.Value = value;
             cv.TimeUTC = time;
+            cv.Status = cValueStatus.OK;
             cv.CommitChanges();
         }
 
@@ -219,6 +220,7 @@ namespace EquipmentModelSimulation
             var cv = variable.pCurrentValue.BeginUpdate();
             cv.Value = currentValue;
             cv.TimeUTC = time;
+            cv.Status = cValueStatus.OK;
             cv.CommitChanges();
         }
 
