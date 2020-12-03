@@ -15,17 +15,20 @@ namespace EquipmentModelSimulation
 
                 showHelp = Arguments.ShowHelp;
             }
-            catch (System.ArgumentException e)
+            catch (ArgumentException e)
             {
-                Console.WriteLine();
-                Console.WriteLine("ERROR: " + e.Message);
-                Console.WriteLine();
+                if (!Arguments.ShowHelp)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("ERROR: " + e.Message);
+                }
 
                 showHelp = true;
             }
 
             if (showHelp)
             {
+                Console.WriteLine();
                 Arguments.PrintHelp();
                 return;
             }
