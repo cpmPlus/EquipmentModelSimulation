@@ -6,6 +6,9 @@ namespace EquipmentModelSimulation
 {
     class Arguments
     {
+        private static OptionSet optionSet;
+
+        public static bool ShowHelp = false;
         public static int NumberOfSites { get; set; } = 1;
         public static string Host { get; set; }
         public static string Username { get; set; }
@@ -17,8 +20,9 @@ namespace EquipmentModelSimulation
 
         public static void ParseArgs(string[] args)
         {
-            var p = new OptionSet()
+            optionSet = new OptionSet()
             {
+                { "?|help", "Help", v => ShowHelp = v != null },
                 { "s|sites=", "Number of sites", v => NumberOfSites = int.Parse(v) },
                 { "h|host=", "Connection string for the History system", v => Host = v },
                 { "u|user=", "Name of the user", v => Username = v },
@@ -58,7 +62,7 @@ namespace EquipmentModelSimulation
                 { "d|dataPointsPerSecond=", "How many data points to write per second. Default: 1", v => DataPointsPerSecond = double.Parse(v) }
             };
 
-            p.Parse(args);
+            optionSet.Parse(args);
 
             if (Host == null)
             {
@@ -72,6 +76,11 @@ namespace EquipmentModelSimulation
             {
                 throw new System.ArgumentException("Define password using -p <password>");
             }
+        }
+
+        public static void PrintHelp()
+        {
+            optionSet.WriteOptionDescriptions(System.Console.Out);
         }
     }
 }

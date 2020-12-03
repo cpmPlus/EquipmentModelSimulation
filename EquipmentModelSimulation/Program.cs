@@ -10,6 +10,12 @@ namespace EquipmentModelSimulation
         {
             Arguments.ParseArgs(args);
 
+            if (Arguments.ShowHelp)
+            {
+                Arguments.PrintHelp();
+                return;
+            }
+
             // Initialize the interface
             ConsoleGUI gui = new ConsoleGUI();
 
