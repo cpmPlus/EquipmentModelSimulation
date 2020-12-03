@@ -8,9 +8,23 @@ namespace EquipmentModelSimulation
 
         private static void Main(string[] args)
         {
-            Arguments.ParseArgs(args);
+            bool showHelp;
+            try
+            {
+                Arguments.ParseArgs(args);
 
-            if (Arguments.ShowHelp)
+                showHelp = Arguments.ShowHelp;
+            }
+            catch (System.ArgumentException e)
+            {
+                Console.WriteLine();
+                Console.WriteLine("ERROR: " + e.Message);
+                Console.WriteLine();
+
+                showHelp = true;
+            }
+
+            if (showHelp)
             {
                 Arguments.PrintHelp();
                 return;
